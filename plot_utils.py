@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+
 def do_plot(xlabel, x, ylabel, y, label, title):
     fig = plt.figure(figsize=(20, 12))
     plt.plot(x, y, label=label)
@@ -8,7 +9,7 @@ def do_plot(xlabel, x, ylabel, y, label, title):
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    
+
     plt.legend()
     plt.show()
 

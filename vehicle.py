@@ -2,9 +2,8 @@ import math
 import numpy as np
 
 from scipy.integrate import ode
-from math import sin, cos, tan, pi, asin
+from math import pi, sin, cos, tan, asin
 from isentropic import isentropic_relations
-from planet import Planet
 
 
 class Vehicle:
