@@ -36,4 +36,4 @@ class Mars(Planet):
 
     # ratio of specific heats
     def gamma(self):
-        return 1.3
+        return 1.33
