@@ -50,7 +50,7 @@ class Vehicle:
         sigma = asin( (cos(alpha)*sin(beta)*sin(pitch) - sin(alpha)*sin(beta)*cos(roll)*cos(pitch) + cos(beta)*sin(roll)*cos(pitch)) / cos(gamma) ) # bank angle
 
         # atmospheric properties
-        temp, p, rho = self.planet.get_atmosphere(r)  # freestream temperature, pressure, density
+        temp, p, rho, mu = self.planet.get_atmosphere(r, theta, phi)  # freestream temperature, pressure, density
 
         if rho > 0.0:
             # mach number
@@ -58,9 +58,6 @@ class Vehicle:
 
             # isentropic relations
             Ma, p, rho, temp = isentropic_relations(Ma, p, rho, temp, self.planet.gamma())
-
-            # coefficient of viscosity 
-            mu = 1.0
 
             # reynold numbers
             Re = (rho * V * self.L) / mu

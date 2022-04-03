@@ -11,7 +11,7 @@ class Mars_Atmosphere:
 
         metadata = pd.read_csv(f"{metadata_path}/metadata.csv", index_col=0).sort_index()
 
-        for key in ["T", "p", "rho"]:
+        for key in ["T", "p", "rho", "mu"]:
             data = []
 
             for altitude, row in metadata.iterrows():
@@ -24,9 +24,7 @@ class Mars_Atmosphere:
 
             altitudes = np.array(metadata.index.values)
 
-            data = np.array(data)
-
-            self.interpolators[key] = RegularGridInterpolator((altitudes, longitudes, latitudes), data)
+            self.interpolators[key] = RegularGridInterpolator((altitudes, longitudes, latitudes), np.array(data))
 
     def get(self, altitude, longitude, latitude):
         pt = np.array([altitude, longitude, latitude])
@@ -34,5 +32,37 @@ class Mars_Atmosphere:
         T = self.interpolators["T"](pt)
         p = self.interpolators["p"](pt)
         rho = self.interpolators["rho"](pt)
+        mu = self.interpolators["mu"](pt)
 
-        return T, p, rho
+        return T, p, rho, mu
+
+    def get_T(self, altitude, longitude, latitude):
+        pt = np.array([altitude, longitude, latitude])
+        return self.interpolators["T"](pt)
+
+    def get_p(self, altitude, longitude, latitude):
+        pt = np.array([altitude, longitude, latitude])
+        return self.interpolators["p"](pt)
+
+    def get_rho(self, altitude, longitude, latitude):
+        pt = np.array([altitude, longitude, latitude])
+        return self.interpolators["rho"](pt)
+
+    def get_mu(self, altitude, longitude, latitude):
+        pt = np.array([altitude, longitude, latitude])
+        return self.interpolators["mu"](pt)
+
+    def get_altitude_heatmaps(self, altitude, rows, cols, key):
+        longitudes = np.linspace(-180, 180, cols)
+        latitudes = np.linspace(90, -90, rows)
+
+        xyz_grid = np.meshgrid(altitude, longitudes, latitudes, indexing="ij")
+        xyz_list = np.reshape(xyz_grid, (3, -1), order="C").T
+
+        result = self.interpolators[key](xyz_list)
+        heatmap = result.reshape([cols, rows])
+        heatmap = heatmap.T
+
+        return heatmap
+
+

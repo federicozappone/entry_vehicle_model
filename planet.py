@@ -1,4 +1,5 @@
 from math import exp, sqrt
+from mars_atmosphere import Mars_Atmosphere
 
 
 class Planet:
@@ -8,7 +9,7 @@ class Planet:
         self.radius = radius
         self.omega = omega
 
-    def get_atmosphere(self, r):
+    def get_atmosphere(self, r, longitude, latitude):
         pass
 
     def get_speed_of_sound(self, T):
@@ -22,14 +23,11 @@ class Mars(Planet):
 
     def __init__(self):
         Planet.__init__(self, 6.39e23, 3389e3, 1.06e-7)
+        self.atmosphere = Mars_Atmosphere()
 
-    # mars atmospheric model for h > 7000m
-    def get_atmosphere(self, r):
-        h = r - self.radius                  # altitude
-        T = (-23.4 - 0.00222 * h) + 273.15   # temperature
-        p = 0.699 * exp(-0.00009 * h)        # pressure
-        rho = p / (0.1921 * T)               # density at altitude
-        return T, p, rho
+    def get_atmosphere(self, r, longitude, latitude):
+        h = r - self.radius # altitude
+        return self.atmosphere.get(h, longitude, latitude)
 
     def get_speed_of_sound(self, T):
         return sqrt(1.29 * 191.8 * T)

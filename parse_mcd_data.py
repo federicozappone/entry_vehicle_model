@@ -22,18 +22,20 @@ for filename in files:
     altitude = int(filename.replace(".txt", ""))
     print(f"processing file {filename} for altitude {altitude}")
 
-    keys = ["T", "p", "rho"]
+    keys = ["T", "p", "rho", "mu"]
 
     tables_dict = {}
 
     tables_dict["T"] = lines[11:77]
     tables_dict["p"] = lines[88:154]
     tables_dict["rho"] = lines[165:231]
+    tables_dict["mu"] = lines[242:308]
 
     # remove empty line
     tables_dict["T"].pop(1)
     tables_dict["p"].pop(1)
     tables_dict["rho"].pop(1)
+    tables_dict["mu"].pop(1)
 
     metadata_row = []
 
@@ -62,7 +64,7 @@ for filename in files:
     metadata[altitude] = metadata_row
 
 
-metadata_dataframe = pd.DataFrame.from_dict(metadata, orient="index", columns=["T", "p", "rho"])
+metadata_dataframe = pd.DataFrame.from_dict(metadata, orient="index", columns=["T", "p", "rho", "mu"])
 metadata_dataframe.to_csv(f"{base_path}/dataframes/metadata.csv")
 
 print(metadata_dataframe.head())
