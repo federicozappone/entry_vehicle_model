@@ -64,7 +64,7 @@ for filename in files:
     metadata[altitude] = metadata_row
 
 
-metadata_dataframe = pd.DataFrame.from_dict(metadata, orient="index", columns=["T", "p", "rho", "mu"])
+metadata_dataframe = pd.DataFrame.from_dict(metadata, orient="index", columns=["T", "p", "rho", "mu"]).sort_index()
 metadata_dataframe.to_csv(f"{base_path}/dataframes/metadata.csv")
 
 print(metadata_dataframe.head())
