@@ -8,7 +8,7 @@ from isentropic import isentropic_relations
 
 class Vehicle:
 
-    # for a generic entry vehicle the length (L) is the base radius and the reference length (c) is equal to L
+    # for a generic entry "capsule" vehicle the length (L) is the base radius and the reference length (c) is equal to L
     def __init__(self, mass, L, c, planet, I=[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]):
         self.mass = mass # vehicle mass
         self.L = L # length
@@ -38,8 +38,8 @@ class Vehicle:
 
         # thrust vector, not used
         epsilon = 0.0 # first thrust vector angle
-        zeta = 0.0 # second thrust vector angle
-        T = 0.0 # thrust
+        zeta = 0.0    # second thrust vector angle
+        T = 0.0       # thrust
 
         # moments of inertia
         I_xx, I_yy, I_zz, I_xy, I_yz, I_zx = self.I
@@ -50,32 +50,28 @@ class Vehicle:
         sigma = asin( (cos(alpha)*sin(beta)*sin(pitch) - sin(alpha)*sin(beta)*cos(roll)*cos(pitch) + cos(beta)*sin(roll)*cos(pitch)) / cos(gamma) ) # bank angle
 
         # atmospheric properties
-        temp, p, rho, mu = self.planet.get_atmosphere(r, theta, phi)  # freestream temperature, pressure, density
+        temp, p, rho, mu = self.planet.get_atmosphere(r, theta, phi) # freestream temperature, pressure, density, viscosity
 
-        if rho > 0.0:
-            # mach number
-            Ma = V / self.planet.get_speed_of_sound(temp) # freestream mach number
+        # mach number
+        Ma = V / self.planet.get_speed_of_sound(temp) # freestream mach number
 
-            # isentropic relations
-            Ma, p, rho, temp = isentropic_relations(Ma, p, rho, temp, self.planet.gamma())
+        # isentropic relations
+        Ma1, p1, rho1, temp1 = isentropic_relations(Ma, p, rho, temp, self.planet.gamma())
 
-            # reynold numbers
-            Re = (rho * V * self.L) / mu
+        # reynold numbers
+        Re = (rho1 * V * self.L) / mu
 
-            # aerodynamic coefficients
-            Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma, Re, alpha)
-        else:
-            Cl = Cd = CM_x = CM_y = CM_z = 0.0
-
+        # aerodynamic coefficients
+        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma1, Re, alpha)
 
         # aerodynamic forces
-        L = 0.5 * rho * Cl * self.A * (V**2)
-        D = 0.5 * rho * Cd * self.A * (V**2)
+        L = 0.5 * rho1 * Cl * self.A * (V**2)
+        D = 0.5 * rho1 * Cd * self.A * (V**2)
 
         # force moments
-        M_x = 0.5 * rho * CM_x * self.A * self.c * (V**2)
-        M_y = 0.5 * rho * CM_y * self.A * self.c * (V**2)
-        M_z = 0.5 * rho * CM_z * self.A * self.c * (V**2)
+        M_x = 0.5 * rho1 * CM_x * self.A * self.c * (V**2)
+        M_y = 0.5 * rho1 * CM_y * self.A * self.c * (V**2)
+        M_z = 0.5 * rho1 * CM_z * self.A * self.c * (V**2)
 
 
         # kinematic equations
