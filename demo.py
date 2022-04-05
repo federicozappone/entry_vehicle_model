@@ -10,12 +10,16 @@ class GEV(Vehicle):
     def __init__(self, mass, L, c, planet):
         Vehicle.__init__(self, mass, L, c, planet)
 
-    # constant coefficients for the demo
-    def get_aero_coefficients(self, Ma, Re, alpha):
+    # constant aerodynamic coefficients for the demo
+    def get_aero_coefficients(self, Ma, Re, alpha, beta):
         return 0.0, 0.47, 0.0, 0.0, 0.0
 
+    # external aero coefficients
+    def get_input_aero_coefficients(self, Ma, Re, alpha, beta):
+        return 0.0, 0.0, 0.0, 0.0, 0.0
 
-def balistic_entry_demo():
+
+def ballistic_entry_demo():
 
     planet = Mars()
     vehicle = GEV(3257.0, 2.25, 2.25, planet)
@@ -36,7 +40,8 @@ def balistic_entry_demo():
 
     # array of initial conditions
     x0 = [
-            entry_interface + planet.radius, longitude, latitude, entry_velocity, flight_path_angle, heading_angle,
+            entry_interface + planet.radius, longitude, latitude,
+            entry_velocity, flight_path_angle, heading_angle,
             omega_x, omega_y, omega_z, pitch, roll, yaw
          ]
 
@@ -71,4 +76,4 @@ def balistic_entry_demo():
 
 
 if __name__ == "__main__":
-    balistic_entry_demo()
+    ballistic_entry_demo()

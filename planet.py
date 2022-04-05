@@ -16,7 +16,7 @@ class Planet:
         pass
 
     def get_gravity(self, r):
-        return self.mass * 6.67408e-11 / self.radius**2
+        return self.mass * 6.67408e-11 / r**2
 
 
 class Mars(Planet):

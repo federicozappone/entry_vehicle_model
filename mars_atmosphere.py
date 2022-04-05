@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math
 
 from scipy.interpolate import RegularGridInterpolator
 
@@ -35,6 +36,19 @@ class Mars_Atmosphere:
         mu = self.interpolators["mu"](pt)
 
         return T, p, rho, mu
+
+    def __call__(self, t, longitude, latitude, altitude):
+        if altitude < 0.0:
+            return np.array([0.0, 0.0, 0.0])
+
+        pt = np.array([altitude, longitude, latitude])
+
+        T = self.interpolators["T"](pt)
+        p = self.interpolators["p"](pt)
+        rho = self.interpolators["rho"](pt)
+        mu = self.interpolators["mu"](pt)
+
+        return np.array([rho, math.sqrt(1.29 * 191.8 * T), mu])
 
     def get_T(self, altitude, longitude, latitude):
         pt = np.array([altitude, longitude, latitude])

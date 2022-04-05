@@ -24,7 +24,16 @@ class Vehicle:
     def step(self, dt):
         return self.r.integrate(self.r.t + dt)
 
-    def get_aero_coefficients(self, Ma, Re, alpha):
+    def get_aero_coefficients(self, Ma, Re, alpha, beta):
+        pass
+
+    def get_input_aero_coefficients(self, Ma, Re, alpha, beta):
+        pass
+
+    def get_aero_force_moments(self, q, Ma, V, Re, alpha, beta):
+        pass
+
+    def get_input_aero_force_moments(self, q, Ma, V, Re, alpha, beta):
         pass
 
     def odes(self, t, x, args):
@@ -62,7 +71,7 @@ class Vehicle:
         Re = (rho1 * V * self.L) / mu
 
         # aerodynamic coefficients
-        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma1, Re, alpha)
+        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma1, Re, alpha, beta)
 
         # aerodynamic forces
         L = 0.5 * rho1 * Cl * self.A * (V**2)
