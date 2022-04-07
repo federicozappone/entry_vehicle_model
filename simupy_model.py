@@ -41,7 +41,7 @@ h_ic = 125.0e3
 V_N_ic = 0.0
 V_E_ic = 5.6e3 * math.cos(flight_path_angle)
 V_D_ic = 5.6e3 * math.sin(flight_path_angle)
-psi_ic = 0.0 * np.pi / 180
+psi_ic = 15.0 * np.pi / 180
 theta_ic = 0.0 * np.pi / 180
 phi_ic = 0.0 * np.pi / 180
 omega_X_ic = 0.0 * np.pi / 180
@@ -84,7 +84,7 @@ vehicle = simupy_flight.Vehicle(
     a_l=a_l,
     b_l=b_l,
     c_l=c_l,
-    d_l=0.0,
+    d_l=b_l,
 )
 
 BD = BlockDiagram(planet, vehicle)

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def do_plot(xlabel, x, ylabel, y, label, title):
@@ -27,3 +28,4 @@ def do_3d_plot(title, xlabel, x, ylabel, y, zlabel, z):
     ax.plot3D(x, y, z, "gray")
 
     plt.show()
+

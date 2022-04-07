@@ -27,28 +27,19 @@ class Mars_Atmosphere:
 
             self.interpolators[key] = RegularGridInterpolator((altitudes, longitudes, latitudes), np.array(data))
 
-    def get(self, altitude, longitude, latitude):
-        pt = np.array([altitude, longitude, latitude])
-
-        T = self.interpolators["T"](pt)
-        p = self.interpolators["p"](pt)
-        rho = self.interpolators["rho"](pt)
-        mu = self.interpolators["mu"](pt)
-
-        return T, p, rho, mu
-
     def __call__(self, t, longitude, latitude, altitude):
         if altitude < 0.0:
             return np.array([0.0, 0.0, 0.0])
 
         pt = np.array([altitude, longitude, latitude])
 
-        T = self.interpolators["T"](pt)
-        p = self.interpolators["p"](pt)
-        rho = self.interpolators["rho"](pt)
-        mu = self.interpolators["mu"](pt)
+        T = self.interpolators["T"](pt) # temperature (K)
+        p = self.interpolators["p"](pt) # pressure (Pa)
+        rho = self.interpolators["rho"](pt) # density (kg/m3)
+        mu = self.interpolators["mu"](pt) # viscosity coefficient (kg/(m*s))
+        cs = math.sqrt(1.29 * 191.8 * T) # speed of sound (m/s)
 
-        return np.array([rho, math.sqrt(1.29 * 191.8 * T), mu])
+        return np.array([rho, cs, mu], dtype=np.float32)
 
     def get_T(self, altitude, longitude, latitude):
         pt = np.array([altitude, longitude, latitude])

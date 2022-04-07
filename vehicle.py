@@ -37,7 +37,7 @@ class Vehicle:
         pass
 
     def odes(self, t, x, args):
-        # altitude, lon, lat, velocity, flight path angle, heading angle
+        # radius, lon, lat, velocity, flight path angle, heading angle
         r, theta, phi, V, gamma, psi, omega_x, omega_y, omega_z, pitch, roll, yaw = x
 
         omega = self.planet.omega # angular velocity of the planet
@@ -58,14 +58,15 @@ class Vehicle:
         alpha = asin( (cos(gamma)*(sin(pitch)*cos(roll)*cos(yaw - psi) - sin(roll)*sin(yaw - psi)) - sin(gamma)*cos(pitch)*cos(roll)) / cos(beta) ) # angle of attack
         sigma = asin( (cos(alpha)*sin(beta)*sin(pitch) - sin(alpha)*sin(beta)*cos(roll)*cos(pitch) + cos(beta)*sin(roll)*cos(pitch)) / cos(gamma) ) # bank angle
 
+        altitude = r-self.planet.radius
         # atmospheric properties
-        temp, p, rho, mu = self.planet.get_atmosphere(r, theta, phi) # freestream temperature, pressure, density, viscosity
+        rho, cs, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream temperature, pressure, density, viscosity
 
         # mach number
-        Ma = V / self.planet.get_speed_of_sound(temp) # freestream mach number
+        Ma = V / cs # freestream mach number
 
         # isentropic relations
-        Ma1, p1, rho1, temp1 = isentropic_relations(Ma, p, rho, temp, self.planet.gamma())
+        Ma1, rho1 = isentropic_relations(Ma, rho, self.planet.gamma())
 
         # reynold numbers
         Re = (rho1 * V * self.L) / mu
