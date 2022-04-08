@@ -3,7 +3,6 @@ import numpy as np
 
 from scipy.integrate import ode
 from math import pi, sin, cos, tan, asin
-from isentropic import isentropic_relations
 
 
 class Vehicle:
@@ -58,30 +57,27 @@ class Vehicle:
         alpha = asin( (cos(gamma)*(sin(pitch)*cos(roll)*cos(yaw - psi) - sin(roll)*sin(yaw - psi)) - sin(gamma)*cos(pitch)*cos(roll)) / cos(beta) ) # angle of attack
         sigma = asin( (cos(alpha)*sin(beta)*sin(pitch) - sin(alpha)*sin(beta)*cos(roll)*cos(pitch) + cos(beta)*sin(roll)*cos(pitch)) / cos(gamma) ) # bank angle
 
-        altitude = r-self.planet.radius
+        altitude = r - self.planet.radius
         # atmospheric properties
         rho, cs, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream temperature, pressure, density, viscosity
 
         # mach number
         Ma = V / cs # freestream mach number
 
-        # isentropic relations
-        Ma1, rho1 = isentropic_relations(Ma, rho, self.planet.gamma())
-
         # reynold numbers
-        Re = (rho1 * V * self.L) / mu
+        Re = (rho * V * self.L) / mu
 
         # aerodynamic coefficients
-        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma1, Re, alpha, beta)
+        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma, Re, alpha, beta)
 
         # aerodynamic forces
-        L = 0.5 * rho1 * Cl * self.A * (V**2)
-        D = 0.5 * rho1 * Cd * self.A * (V**2)
+        L = 0.5 * rho * Cl * self.A * (V**2)
+        D = 0.5 * rho * Cd * self.A * (V**2)
 
         # force moments
-        M_x = 0.5 * rho1 * CM_x * self.A * self.c * (V**2)
-        M_y = 0.5 * rho1 * CM_y * self.A * self.c * (V**2)
-        M_z = 0.5 * rho1 * CM_z * self.A * self.c * (V**2)
+        M_x = 0.5 * rho * CM_x * self.A * self.c * (V**2)
+        M_y = 0.5 * rho * CM_y * self.A * self.c * (V**2)
+        M_z = 0.5 * rho * CM_z * self.A * self.c * (V**2)
 
 
         # kinematic equations
