@@ -59,26 +59,26 @@ class Vehicle:
 
         altitude = r - self.planet.radius
         # atmospheric properties
-        p, rho, cs, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream pressure, density, speed of sound, viscosity
+        p, rho, a, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream pressure, density, speed of sound, viscosity
 
         # mach number
-        Ma = V / cs # freestream mach number
+        Ma = V / a # freestream mach number
 
         # reynold numbers
         Re = (rho * V * self.L) / mu
 
         # aerodynamic coefficients
-        C_L, C_D, C_S, CM_z, CM_x, CM_y = self.get_aero_coefficients(Ma, V, p, rho, alpha, beta)
+        C_L, C_D, C_S, CM_z, CM_x, CM_y = self.get_aero_coefficients(Ma, V, p, rho, 0.0, 0.0)
 
         # aerodynamic forces
         L = 0.5 * rho * C_L * self.A * (V**2) # lift
         D = 0.5 * rho * C_D * self.A * (V**2) # drag
-        S = 0.5 * rho * C_S * self.A * (V**2) # side force (not used)
+        S = 0.5 * rho * C_S * self.A * (V**2) # side (not used)
 
         # force moments
-        M_x = 0.5 * rho * CM_x * self.A * self.c * (V**2)
-        M_y = 0.5 * rho * CM_y * self.A * self.c * (V**2)
-        M_z = 0.5 * rho * CM_z * self.A * self.c * (V**2)
+        M_x = 0.5 * rho * CM_x * self.A * self.L * (V**2)
+        M_y = 0.5 * rho * CM_y * self.A * self.L * (V**2)
+        M_z = 0.5 * rho * CM_z * self.A * self.L * (V**2)
 
 
         # kinematic equations
@@ -105,7 +105,6 @@ class Vehicle:
         psi_dot = (1.0 / V)*( (1.0 / (m*cos(gamma)))*(T*(cos(zeta)*sin(epsilon)*sin(sigma) - sin(zeta)*cos(sigma)) + L*sin(sigma)) \
                             - ((V**2)/r)*cos(gamma)*cos(psi)*tan(phi) + 2.0*V*omega*(sin(psi)*cos(phi)*tan(gamma) - sin(phi)) \
                             - ((r*(omega**2))/cos(gamma))*sin(phi)*cos(phi)*cos(psi) )
-
 
         # rotational dynamics
         omega_x_dot = (1.0 / (I_xx*I_yy - (I_xy**2))) * (I_yy*M_x + I_xy*(M_y - (I_xx + I_yy - I_zz)*omega_x*omega_z) + ((I_xy**2) + (I_yy**2) - I_yy*I_zz)*omega_y*omega_z)

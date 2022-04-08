@@ -41,19 +41,25 @@ class Orion(Vehicle):
         self.CG = np.array(self.mesh.centroid)
         self.A_ref = np.sum(self.areas)
 
-    # constant aerodynamic coefficients for the demo
+        self.coeffs = None
+
     def get_aero_coefficients(self, Ma, V_inf, p_inf, rho_inf, alpha, beta):
-        M_vector = Mach_vector(M_inf=Ma, alpha=0.0, theta=0.0)
-        Cp_max = pres_coeff_max(M=Ma, gamma_var=1.33)
-        Cp, delta = pres_coeff_mod_newton(self.normals, M_vector, Cp_max)
+        if self.coeffs is None:
+            M_vector = Mach_vector(M_inf=Ma, alpha=0.0, theta=0.0)
+            Cp_max = pres_coeff_max(M=Ma, gamma_var=1.33)
+            Cp, delta = pres_coeff_mod_newton(self.normals, M_vector, Cp_max)
 
-        p = pres_from_Cp(Cp, p_inf, rho_inf, V_inf)
-        F = surface_force(p, self.normals, self.areas) * -1.0
-        M, L = surface_moment(F, self.origins, self.CG)
+            p = pres_from_Cp(Cp, p_inf, rho_inf, V_inf)
+            F = surface_force(p, self.normals, self.areas) * -1.0
+            M, L = surface_moment(F, self.origins, self.CG)
 
-        coeffs = aero_coeff(F, M, self.A_ref, self.L, rho_inf, V_inf, 0.0, 0.0)
+            self.coeffs = aero_coeff(F, M, self.A_ref, self.L, rho_inf, V_inf, 0.0, 0.0)
 
-        return coeffs[0], coeffs[1], coeffs[2], 0.0, 0.0, 0.0
+            self.coeffs[3] = 0.0
+            self.coeffs[4] = 0.0
+            self.coeffs[5] = 0.0
+
+        return self.coeffs
 
     # external aero coefficients
     def get_input_aero_coefficients(self, Ma, V_inf, p_inf, rho_inf, alpha, beta):
@@ -113,15 +119,6 @@ def demo():
         "altitude (km)", x[:, 0] / 1e3,
         "trajectory", "velocity/altitude"
     )
-
-    do_plot(
-        "velocity (km/s)", x[:, 3] / 1e3,
-        "time (s)", t,
-        "trajectory", "longitude/latitude"
-    )
-
-
-    do_3d_plot("trajectory", "lon", np.degrees(x[:, 1]), "lat", np.degrees(x[:, 2]), "h", x[:, 0])
 
 
 if __name__ == "__main__":
