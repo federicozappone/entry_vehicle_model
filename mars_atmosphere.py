@@ -39,7 +39,7 @@ class Mars_Atmosphere:
         mu = self.interpolators["mu"](pt) # viscosity coefficient (kg/(m*s))
         cs = math.sqrt(1.29 * 191.8 * T) # speed of sound (m/s)
 
-        return np.array([rho, cs, mu], dtype=np.float32)
+        return np.array([p, rho, cs, mu], dtype=np.float32)
 
     def get_T(self, altitude, longitude, latitude):
         pt = np.array([altitude, longitude, latitude])

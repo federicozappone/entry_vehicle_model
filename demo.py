@@ -1,8 +1,12 @@
 import numpy as np
+import trimesh
 
 from vehicle import Vehicle
 from planet import Mars
 from plot_utils import do_plot, do_3d_plot
+
+from flow import Mach_vector, pres_coeff_max, pres_coeff_mod_newton, pres_from_Cp, \
+    surface_force, surface_moment, aero_coeff
 
 
 class GEV(Vehicle):
@@ -11,21 +15,55 @@ class GEV(Vehicle):
         Vehicle.__init__(self, mass, L, c, planet)
 
     # constant aerodynamic coefficients for the demo
-    def get_aero_coefficients(self, Ma, Re, alpha, beta):
+    def get_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
         A = np.pi * (2.25**2)
         BC = 146
         Cd = 3257.0 / (A * BC)
-        return 0.0, Cd, 0.0, 0.0, 0.0
+        return 0.0, Cd, 0.0, 0.0, 0.0, 0.0
 
     # external aero coefficients
-    def get_input_aero_coefficients(self, Ma, Re, alpha, beta):
-        return 0.0, 0.0, 0.0, 0.0, 0.0
+    def get_input_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
+        return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
 
-def ballistic_entry_demo():
+class Orion(Vehicle):
+
+    def __init__(self, planet):
+        Vehicle.__init__(self, 9300, 5.03, 5.03, planet)
+
+        self.mesh = trimesh.load("models/orion.stl")
+        rotation = trimesh.transformations.rotation_matrix(0.5 * np.pi, [0, 0, 1])
+        self.mesh.apply_transform(rotation)
+
+        self.normals = np.array(self.mesh.facets_normal)
+        self.areas = np.array(self.mesh.facets_area)
+        self.origins = np.array(self.mesh.facets_origin)
+        self.CG = np.array(self.mesh.centroid)
+        self.A_ref = np.sum(self.areas)
+
+    # constant aerodynamic coefficients for the demo
+    def get_aero_coefficients(self, Ma, V_inf, p_inf, rho_inf, alpha, beta):
+        M_vector = Mach_vector(M_inf=Ma, alpha=0.0, theta=0.0)
+        Cp_max = pres_coeff_max(M=Ma, gamma_var=1.33)
+        Cp, delta = pres_coeff_mod_newton(self.normals, M_vector, Cp_max)
+
+        p = pres_from_Cp(Cp, p_inf, rho_inf, V_inf)
+        F = surface_force(p, self.normals, self.areas) * -1.0
+        M, L = surface_moment(F, self.origins, self.CG)
+
+        coeffs = aero_coeff(F, M, self.A_ref, self.L, rho_inf, V_inf, 0.0, 0.0)
+
+        return coeffs[0], coeffs[1], coeffs[2], 0.0, 0.0, 0.0
+
+    # external aero coefficients
+    def get_input_aero_coefficients(self, Ma, V_inf, p_inf, rho_inf, alpha, beta):
+        return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+
+def demo():
 
     planet = Mars()
-    vehicle = GEV(3257.0, 2.25, 2.25, planet)
+    vehicle = Orion(planet)
 
     # initial conditions (taken from MSL entry parameters)
     entry_interface = 125e3
@@ -37,7 +75,7 @@ def ballistic_entry_demo():
     omega_x = 0.0
     omega_y = 0.0
     omega_z = 0.0
-    pitch = 0.0
+    pitch = np.radians(-15.0)
     roll = 0.0
     yaw = 0.0
 
@@ -65,6 +103,7 @@ def ballistic_entry_demo():
         t.append(vehicle.r.t)
 
         current_altitude = step[0] - planet.radius
+        print("current altitude:", current_altitude)
 
     x = np.array(x)
     x[:, 0] -= planet.radius
@@ -86,4 +125,4 @@ def ballistic_entry_demo():
 
 
 if __name__ == "__main__":
-    ballistic_entry_demo()
+    demo()

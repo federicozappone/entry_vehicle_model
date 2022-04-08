@@ -23,10 +23,10 @@ class Vehicle:
     def step(self, dt):
         return self.r.integrate(self.r.t + dt)
 
-    def get_aero_coefficients(self, Ma, Re, alpha, beta):
+    def get_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
         pass
 
-    def get_input_aero_coefficients(self, Ma, Re, alpha, beta):
+    def get_input_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
         pass
 
     def get_aero_force_moments(self, q, Ma, V, Re, alpha, beta):
@@ -59,7 +59,7 @@ class Vehicle:
 
         altitude = r - self.planet.radius
         # atmospheric properties
-        rho, cs, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream temperature, pressure, density, viscosity
+        p, rho, cs, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream pressure, density, speed of sound, viscosity
 
         # mach number
         Ma = V / cs # freestream mach number
@@ -68,11 +68,12 @@ class Vehicle:
         Re = (rho * V * self.L) / mu
 
         # aerodynamic coefficients
-        Cl, Cd, CM_x, CM_y, CM_z = self.get_aero_coefficients(Ma, Re, alpha, beta)
+        C_L, C_D, C_S, CM_z, CM_x, CM_y = self.get_aero_coefficients(Ma, V, p, rho, alpha, beta)
 
         # aerodynamic forces
-        L = 0.5 * rho * Cl * self.A * (V**2)
-        D = 0.5 * rho * Cd * self.A * (V**2)
+        L = 0.5 * rho * C_L * self.A * (V**2) # lift
+        D = 0.5 * rho * C_D * self.A * (V**2) # drag
+        S = 0.5 * rho * C_S * self.A * (V**2) # side force (not used)
 
         # force moments
         M_x = 0.5 * rho * CM_x * self.A * self.c * (V**2)
