@@ -109,7 +109,7 @@ def demo():
     current_altitude = x0[0] - planet.radius
 
     # simulate until distance from ground is 10km
-    while vehicle.r.successful() and current_altitude > 40e3:
+    while vehicle.r.successful() and current_altitude > 10e3:
         step = vehicle.step(dt)
         x.append(step)
         t.append(vehicle.r.t)
