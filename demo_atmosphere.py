@@ -10,7 +10,7 @@ atmosphere = Mars_Atmosphere()
 
 image_rows = 1000
 image_cols = 2000
-altitude = 125000
+altitude = 60000
 
 heatmaps = {}
 keys = ["T", "p", "rho", "mu"]
