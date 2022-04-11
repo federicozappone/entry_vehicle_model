@@ -87,7 +87,7 @@ def demo():
     omega_x = 0.0
     omega_y = 0.0
     omega_z = 0.0
-    pitch = np.radians(-15.0)
+    pitch = 0.0
     roll = 0.0
     yaw = 0.0
 
