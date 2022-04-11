@@ -28,4 +28,3 @@ def do_3d_plot(title, xlabel, x, ylabel, y, zlabel, z):
     ax.plot3D(x, y, z, "gray")
 
     plt.show()
-

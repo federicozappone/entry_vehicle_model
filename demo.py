@@ -9,17 +9,18 @@ from flow import Mach_vector, pres_coeff_max, pres_coeff_mod_newton, pres_from_C
     surface_force, surface_moment, aero_coeff
 
 
-class GEV(Vehicle):
+class Sphere(Vehicle):
 
-    def __init__(self, mass, L, c, planet):
-        Vehicle.__init__(self, mass, L, c, planet)
+    def __init__(self, mass, diameter, planet):
+        Vehicle.__init__(self, mass, diameter, diameter, planet)
 
-    # constant aerodynamic coefficients for the demo
+        # using spherical moments of inertia
+        Im = 0.4 * self.mass * (self.L/2.0)**2
+        self.I = [Im, Im, Im, 0.0, 0.0, 0.0]
+
+    # constant aerodynamic coefficients
     def get_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
-        A = np.pi * (2.25**2)
-        BC = 146
-        Cd = 3257.0 / (A * BC)
-        return 0.0, Cd, 0.0, 0.0, 0.0, 0.0
+        return 0.0, 0.46, 0.0, 0.0, 0.0, 0.0
 
     # external aero coefficients
     def get_input_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
@@ -43,6 +44,10 @@ class Orion(Vehicle):
 
         self.coeffs = None
 
+        # using spherical moments of inertia
+        Im = 0.4 * self.mass * (self.L/2.0)**2
+        self.I = [Im, Im, Im, 0.0, 0.0, 0.0]
+
     def get_aero_coefficients(self, Ma, V_inf, p_inf, rho_inf, alpha, beta):
         if self.coeffs is None:
             M_vector = Mach_vector(M_inf=Ma, alpha=0.0, theta=0.0)
@@ -55,6 +60,7 @@ class Orion(Vehicle):
 
             self.coeffs = aero_coeff(F, M, self.A_ref, self.L, rho_inf, V_inf, 0.0, 0.0)
 
+            # force moments coefficients not used for now
             self.coeffs[3] = 0.0
             self.coeffs[4] = 0.0
             self.coeffs[5] = 0.0
@@ -103,7 +109,7 @@ def demo():
     current_altitude = x0[0] - planet.radius
 
     # simulate until distance from ground is 10km
-    while vehicle.r.successful() and current_altitude > 10e3:
+    while vehicle.r.successful() and current_altitude > 40e3:
         step = vehicle.step(dt)
         x.append(step)
         t.append(vehicle.r.t)

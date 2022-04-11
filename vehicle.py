@@ -9,11 +9,11 @@ class Vehicle:
 
     # for a generic entry "capsule" vehicle the length (L) is the base radius and the reference length (c) is equal to L
     def __init__(self, mass, L, c, planet, I=[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]):
-        self.mass = mass # vehicle mass
-        self.L = L # length
-        self.c = c # reference length
-        self.A = pi * (c**2) # reference area
-        self.I = I # moments of inertia
+        self.mass = mass         # vehicle mass (kg)
+        self.L = L               # length (m)
+        self.c = c               # reference length (m)
+        self.A = pi * (c**2)     # reference area (m2)
+        self.I = I               # moments of inertia (kg-m2)
         self.planet = planet
         self.r = ode(self.odes)
 
@@ -29,14 +29,8 @@ class Vehicle:
     def get_input_aero_coefficients(self, Ma, V, p_inf, rho_inf, alpha, beta):
         pass
 
-    def get_aero_force_moments(self, q, Ma, V, Re, alpha, beta):
-        pass
-
-    def get_input_aero_force_moments(self, q, Ma, V, Re, alpha, beta):
-        pass
-
     def odes(self, t, x, args):
-        # radius, lon, lat, velocity, flight path angle, heading angle
+        # radius, lon, lat, velocity, flight path angle, heading angle, angular velocity, pitch, roll, yaw
         r, theta, phi, V, gamma, psi, omega_x, omega_y, omega_z, pitch, roll, yaw = x
 
         omega = self.planet.omega # angular velocity of the planet
@@ -59,7 +53,7 @@ class Vehicle:
 
         altitude = r - self.planet.radius
         # atmospheric properties
-        p, rho, a, mu = self.planet.atmosphere(0.0, theta, phi, altitude) # freestream pressure, density, speed of sound, viscosity
+        p, rho, a, mu = self.planet.atmosphere(t, theta, phi, altitude) # freestream pressure, density, speed of sound, viscosity
 
         # mach number
         Ma = V / a # freestream mach number
@@ -68,7 +62,7 @@ class Vehicle:
         Re = (rho * V * self.L) / mu
 
         # aerodynamic coefficients
-        C_L, C_D, C_S, CM_z, CM_x, CM_y = self.get_aero_coefficients(Ma, V, p, rho, 0.0, 0.0)
+        C_L, C_D, C_S, C_N, C_A, C_M = self.get_aero_coefficients(Ma, V, p, rho, alpha, beta)
 
         # aerodynamic forces
         L = 0.5 * rho * C_L * self.A * (V**2) # lift
@@ -76,9 +70,9 @@ class Vehicle:
         S = 0.5 * rho * C_S * self.A * (V**2) # side (not used)
 
         # force moments
-        M_x = 0.5 * rho * CM_x * self.A * self.L * (V**2)
-        M_y = 0.5 * rho * CM_y * self.A * self.L * (V**2)
-        M_z = 0.5 * rho * CM_z * self.A * self.L * (V**2)
+        M_x = 0.5 * rho * C_A * self.A * self.L * (V**2)
+        M_y = 0.5 * rho * C_M * self.A * self.L * (V**2)
+        M_z = 0.5 * rho * C_N * self.A * self.L * (V**2)
 
 
         # kinematic equations
