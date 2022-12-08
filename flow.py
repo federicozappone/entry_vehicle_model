@@ -373,15 +373,4 @@ def aero_coeff(F, M, A_ref, L_ref, rho_inf, V_inf, alpha, beta):
     C_A = M_roll / (q * A_ref * L_ref)
     C_M = M_pitch / (q * A_ref * L_ref)
 
-#   C_x = F_x / (q * A_ref)
-#   C_y = F_y / (q * A_ref)
-#   C_z = F_z / (q * A_ref)
-#   C_N = M_yaw / (q * A_ref * L_ref)
-#   C_A = M_roll / (q * A_ref * L_ref)
-#   C_M = M_pitch / (q * A_ref * L_ref)
-#
-#   C_D = (C_z * np.cos(alpha) * np.sin(beta)) + \
-#       (C_x * np.cos(beta) * np.sin(alpha)) - \
-#       (C_y * np.sin(beta))
-
     return [C_L, C_D, C_S, C_N, C_A, C_M]
