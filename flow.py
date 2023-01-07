@@ -1,4 +1,101 @@
 import numpy as np
+from scipy.constants import k
+
+
+def viscosity_sutherland(T, gas):
+	# Sutherland constants for common gases (C1, S, mu_ref, T_ref)
+	gas_dict = {
+				'air'	:	[1.4580000000-6, 110.4, 1.716E-5, 273.15],
+				'N2'	:	[1.406732195E-6, 111, 17.81E-6, 300.55],
+				'O2'	:	[1.693411300E-6, 127, 20.18E-6, 292.25],
+				'CO2'	:	[1.572085931E-6, 240, 14.8E-6, 293.15],
+				'CO'	:	[1.428193225E-6, 118, 17.2E-6, 288.15],
+				'H2'	:	[0.636236562E-6, 72, 8.76E-6, 293.85],
+				'NH3'	:	[1.297443379E-6, 370, 9.82E-6, 293.15],
+				'SO2'	:	[1.768466086E-6, 416, 12.54E-6, 293.65],
+				'He'	:	[1.484381490E-6, 79.4, 19E-6, 273],
+				'CH4'	:	[1.252898823E-6, 197.8, 12.01E-6, 273.15]
+				}
+
+	if gas in gas_dict:
+		C1 = gas_dict[gas][0]
+		S = gas_dict[gas][1]
+		mu_ref = gas_dict[gas][2]
+		T_ref = gas_dict[gas][3]
+		mu = mu_ref * ((T / T_ref)**(1.5)) * ((T_ref + S) / (T + S))
+		#mu = C1 * ((T**(3.0/2.0)) / (T + S))
+	else:
+		print('ERROR: Species not recognised')
+		mu = np.nan
+	
+	return mu
+
+
+def viscosity(**kwargs):
+	"""
+	Calculates the viscosity of a gas using one of the following:
+	1) Sutherland's law
+		(http://www.cfd-online.com/Wiki/Sutherland's_law)
+		(http://en.wikipedia.org/wiki/Viscosity)
+		(http://mac6.ma.psu.edu/stirling/simulations/DHT/ViscosityTemperatureSutherland.html)
+	2) Chapman-Enskog equation
+	(http://www.owlnet.rice.edu/~ceng402/ed1projects/proj00/clop/mainproj2.html)
+	Input variables:
+		mode	:	'S' (Sutherland) or 'C-E' (Chapman-Enskog)
+		T		:	Gas temperature
+	Sutherland variables:
+		mu_ref	:	Reference viscosity
+		T_ref	:	Reference temperature
+		C1		:	Sutherland's law constant
+		gas		:	Common gas properties
+		S		:	Sutherland temperature
+	Chapman-Enskog variables:
+		M		:	Molecular weight
+		sigma	:	Lennard-Jones parameter (collision diameter)
+		omega	:	Collision integral
+	"""
+
+
+	if (kwargs['mode'] == 'S') or (kwargs['mode'] == 's') or \
+	(kwargs['mode'] == 'Sutherland') or (kwargs['mode'] == 'sutherland'):
+
+		# Sutherland constants for common gases (C1, S, mu_ref, T_ref)
+		gas_dict = {
+					'air'	:	[1.4580000000-6, 110.4, 1.716E-5, 273.15],
+					'N2'	:	[1.406732195E-6, 111, 17.81E-6, 300.55],
+					'O2'	:	[1.693411300E-6, 127, 20.18E-6, 292.25],
+					'CO2'	:	[1.572085931E-6, 240, 14.8E-6, 293.15],
+					'CO'	:	[1.428193225E-6, 118, 17.2E-6, 288.15],
+					'H2'	:	[0.636236562E-6, 72, 8.76E-6, 293.85],
+					'NH3'	:	[1.297443379E-6, 370, 9.82E-6, 293.15],
+					'SO2'	:	[1.768466086E-6, 416, 12.54E-6, 293.65],
+					'He'	:	[1.484381490E-6, 79.4, 19E-6, 273],
+					'CH4'	:	[1.252898823E-6, 197.8, 12.01E-6, 273.15]
+					}
+
+		if ('gas' in kwargs) and (kwargs['gas'] in gas_dict):
+			kwargs.update({'C1'	:	gas_dict[kwargs['gas']][0]})
+			kwargs.update({'S'		:	gas_dict[kwargs['gas']][1]})
+			kwargs.update({'mu_ref':	gas_dict[kwargs['gas']][2]})
+			kwargs.update({'T_ref'	:	gas_dict[kwargs['gas']][3]})
+
+		if ('mu_ref' in kwargs) and ('T_ref' in kwargs) and ('T' in kwargs) \
+			and ('S' in kwargs):
+			mu = kwargs['mu_ref'] * ((kwargs['T'] / \
+			kwargs['T_ref'])**(1.5)) * ((kwargs['T_ref'] + \
+			kwargs['S']) / (kwargs['T'] + kwargs['S']))
+		elif ('T' in kwargs) and ('S' in kwargs) and ('C1' in kwargs):
+			mu = kwargs['C1'] * ((kwargs['T']**(1.5)) / (kwargs['T'] + kwargs['S']))
+		else:
+			raise KeyError('Incorrect variable assignment')
+
+	elif (kwargs['mode'] == 'C-E') or (kwargs['mode'] == 'c-e') or \
+	(kwargs['mode'] == 'Chapman-Enskog') or (kwargs['mode'] == 'chapman-enskog'):
+
+		mu = 2.6693E-5 * (np.sqrt(kwargs['M'] * kwargs['T'])) / \
+			(kwargs['omega'] * (kwargs['sigma']**2))
+
+	return mu
 
 
 def Mach(a, V):
@@ -82,6 +179,53 @@ def normal_shock_ratios(Ma_1, gamma_var):
         ((gamma_var - 1) / (gamma_var + 1)))**(1 / (gamma_var - 1)))
 
     return [p_ratio, T_ratio, p_0_ratio, T_0_ratio, rho_ratio, Ma_2, p02_p1_ratio]
+
+
+def kinematic_viscosity(mu, rho):
+    """
+    Calculates kinematic viscosity of a fluid.
+    Input variables:
+        mu  :   Dynamic viscosity
+        rho :   Flow density
+    """
+
+    nu = mu / rho
+
+    return nu
+
+
+def vel_gradient(**kwargs):
+
+    """
+    Calculates velocity gradient across surface object in supersonic
+    flow (from stagnation point) based upon either of two input variable
+    sets.
+    First method:
+	vel_gradient(R_n = Object radius (or equivalent radius, for
+             shapes that are not axisymmetric),
+         p_0 = flow stagnation pressure,
+         p_inf = flow freestream static pressure
+         rho = flow density)
+    Second method:
+        vel_gardient(R_n = Object radius (or equivalent radius, for
+						shapes that are	not axisymmetric),
+					delta = Shock stand-off distance (from object
+						stagnation point),
+					U_s = Flow velocity immediately behind shock)
+    """
+    if ('R_n' in kwargs) and ('p_0' in kwargs) and ('p_inf' in kwargs) and \
+    ('rho' in kwargs):
+        from numpy import sqrt
+        vel_gradient = (1 / kwargs['R_n']) * sqrt((2 * (kwargs['p_0'] - \
+            kwargs['p_inf'])) / kwargs['rho'])
+    elif ('R_n' in kwargs) and ('U_s' in kwargs) and ('delta' in kwargs):
+        b = kwargs['delta'] + kwargs['R_n']
+        vel_gradient = (kwargs['U_s'] / kwargs['R_n']) * (1 + ((2 + ((b**3) / \
+            (kwargs['R_n']**3))) / (2 * (((b**3) / (kwargs['R_n']**3)) - 1))))
+    else:
+        raise KeyError('Incorrect variable assignment')
+
+    return vel_gradient
 
 
 def shock_standoff(R_n, rho_inf, rho_s):
